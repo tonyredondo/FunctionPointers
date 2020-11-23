@@ -35,3 +35,51 @@ Intel Core i7-1068NG7 CPU 2.30GHz, 1 CPU, 2 logical and 2 physical cores
 |   CreateNewActionPointer |  15.3587 ns | 0.0804 ns | 0.0752 ns |      - |     - |     - |         - |
 |        DelegateBenchmark |   1.4036 ns | 0.0062 ns | 0.0049 ns |      - |     - |     - |         - |
 | FunctionPointerBenchmark |   0.8367 ns | 0.0125 ns | 0.0111 ns |      - |     - |     - |         - |
+
+### Benchmark code:
+```csharp
+
+    [MemoryDiagnoser]
+    public class BenchFunction
+    {
+        private static MethodInfo mInfo;
+        private static Action actionDelegate;
+        private static ActionPointer actionPointer;
+
+        static BenchFunction()
+        {
+            mInfo = typeof(BenchFunction).GetMethod(nameof(TargetMethod));
+
+            actionDelegate = (Action)mInfo.CreateDelegate(typeof(Action));
+            actionPointer = new ActionPointer(mInfo);
+        }
+
+        [Benchmark]
+        public Action CreateNewDelegate()
+        {
+            return (Action)mInfo.CreateDelegate(typeof(Action));
+        }
+
+        [Benchmark]
+        public ActionPointer CreateNewActionPointer()
+        {
+            return new ActionPointer(mInfo);
+        }
+
+        [Benchmark]
+
+        public void DelegateBenchmark()
+        {
+            actionDelegate();
+        }
+
+        [Benchmark]
+        public void FunctionPointerBenchmark()
+        {
+            actionPointer.Invoke();
+        }
+
+        public static void TargetMethod() { }
+    }
+
+```
